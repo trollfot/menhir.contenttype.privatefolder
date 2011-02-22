@@ -1,0 +1,15 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:i18n="http://namespaces.zope.org/i18n"
+           xmlns:grok="http://namespaces.zope.org/grok">
+
+  <include package="dolmen.content" file="meta.zcml"/>
+  <include package="dolmen.app.layout" />
+  <include package="dolmen.app.container" />
+  <include package="dolmen.app.viewselector" />
+
+  <include package="zope.i18n" file="meta.zcml" />
+  <i18n:registerTranslations directory="locales" />
+
+  <grok:grok package="." />
+
+</configure>

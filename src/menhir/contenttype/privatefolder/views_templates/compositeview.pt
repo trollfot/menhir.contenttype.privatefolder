@@ -1,0 +1,6 @@
+<div class="composite-view">
+  <h1 tal:content="context/title" />
+  <div class="composite-body sequence-block" tal:repeat="item view/items">
+    <div tal:content="structure item" />
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="menhir.contenttype.folder"
+    package="menhir.contenttype.folder">
+
+  <include package="zope.i18n" file="meta.zcml" />
+  <include package="zope.component" file="meta.zcml" />
+  <include package="grokcore.view" file="meta.zcml" />
+  <include package="zope.security" file="meta.zcml" />
+  <include package="zope.securitypolicy" file="meta.zcml" />
+  <include package="zope.principalregistry" file="meta.zcml" />
+
+  <include package="zope.i18n" />
+  <include package="zope.security" />
+  <include package="zope.securitypolicy" />
+  <include package="zope.principalregistry" />
+  <include package="zope.publisher" />
+  <include package="zope.publisher.browser" />
+  <include package="zope.location" />
+  <include package="zope.traversing" />
+  <include package="zope.traversing.browser" />
+  <include package="dolmen.app.security" />
+  <include package="dolmen.app.content" />
+  <include package="dolmen.app.layout" />
+  <include package="dolmen.content" />
+  <include package="menhir.contenttype.folder" />
+  
+  <!-- Typical functional testing security setup -->
+  <securityPolicy
+      component="zope.securitypolicy.zopepolicy.ZopeSecurityPolicy"
+      />
+  
+  <principal
+      id="zope.mgr"
+      title="Manager"
+      login="mgr"
+      password="mgrpw"
+      />
+  
+  <role id="zope.Manager" title="Site Manager" />
+  <grantAll role="zope.Manager" />
+  <grant role="zope.Manager" principal="zope.mgr" />
+  
+</configure>
