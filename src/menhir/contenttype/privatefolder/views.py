@@ -103,6 +103,8 @@ class PermissionWrapper(object):
 
 class ControlByRole(TableFormCanvas, Form):
     grok.context(IPrivateFolder)
+    grok.require('zope.ManageContent')
+
     actions = Actions()
     fields = Fields()
     tableFields = PermissionsFields()
