@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import dolmen.content
-from zope.interface import implements
+from zope.interface import Interface, implements
 from dolmen.app.content import icon
 from menhir.contenttype.folder import Folder, MCFMessageFactory as _
 
 
-class IPrivateFolder(IFolder):
-    """Schema interface for private folders.
+class IPrivateFolder(Interface):
+    """Marker interface for private folders.
     """
 
 
