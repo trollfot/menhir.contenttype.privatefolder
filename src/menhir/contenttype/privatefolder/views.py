@@ -2,35 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import grokcore.view as grok
+import megrok.pagetemplate as pt
 
 from dolmen import menu
-from dolmen.app.container import listing
-from dolmen.app.layout import Page, Form
-from dolmen.app.viewselector import SelectableViewsMenu
+from dolmen.app.layout import ContextualMenu, Form
 from menhir.contenttype.privatefolder import IPrivateFolder
-from zope.component import getMultiAdapter
 from menhir.contenttype.privatefolder import MCFMessageFactory as _
+from zeam.form.base import Fields, Actions, Action, DISPLAY
+from zeam.form.base.form import cloneFormData
+from zeam.form.base.interfaces import IDataManager
+from zeam.form.base.markers import NO_VALUE, SUCCESS, FAILURE
+from zeam.form.base.widgets import Widgets, getWidgetExtractor
 from zeam.form.table import TableActions
 from zeam.form.table.form import TableFormCanvas
-from zeam.form.ztk.fields import SchemaField
-from zeam.form.ztk.actions import EditAction
-from zeam.form.ztk.widgets.choice import ChoiceSchemaField
-from zope.schema import Choice, TextLine
-from zope.securitypolicy.settings import Allow, Deny, Unset
-from zeam.form.base import Fields, Actions, Action, SUCCESS, DISPLAY
-from zeam.form.base.markers import NO_VALUE, SUCCESS, FAILURE
-from zeam.form.base.interfaces import IField, IDataManager
-from zeam.form.base.form import cloneFormData
-from zope.security.interfaces import IPermission
-from zope.component import getUtilitiesFor
-from zope.securitypolicy.interfaces import IRole
-from zeam.form.base.form import FormData
-import megrok.pagetemplate as pt
-from zeam.form.base.widgets import Widgets, getWidgetExtractor
 from zeam.form.table.select import SelectField
-from zeam.form.base.datamanager import ObjectDataManager
-from zope.securitypolicy.interfaces import IRolePermissionManager
+from zeam.form.ztk.fields import SchemaField
+from zeam.form.ztk.widgets.choice import ChoiceSchemaField
+from zope.component import getUtilitiesFor
 from zope.interface import implements
+from zope.schema import Choice, TextLine
+from zope.security.interfaces import IPermission
+from zope.securitypolicy.interfaces import IRole, IRolePermissionManager
+from zope.securitypolicy.settings import Allow, Deny, Unset
 
 
 class Apply(Action):
@@ -46,7 +39,6 @@ class Apply(Action):
         if errors:
             return FAILURE
 
-        context = form.getContent()
         self.applyData(content, data)
         form.status = _(u"Modification saved.")
         return SUCCESS
@@ -63,7 +55,6 @@ class PermissionsFields(object):
 
         value = inst.__dict__.get('_permissions', None)
         if value is None:
-            rpm = IRolePermissionManager(inst.getContentData().getContent())
             value = inst.__dict__['_permissions'] = Fields()
             for name, permission in getUtilitiesFor(IRole):
                 value.append(ChoiceSchemaField(Choice(
@@ -101,6 +92,7 @@ class PermissionWrapper(object):
             self.manager.grantPermissionToRole(self.permission.id, id)
 
 
+@menu.menuentry(ContextualMenu, order=50)
 class ControlByRole(TableFormCanvas, Form):
     grok.context(IPrivateFolder)
     grok.require('zope.ManageContent')

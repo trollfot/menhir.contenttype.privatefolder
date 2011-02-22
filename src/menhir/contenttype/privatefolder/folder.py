@@ -2,7 +2,6 @@
 
 import dolmen.content
 from dolmen.app.content import icon, IDescriptiveSchema
-from dolmen.app.viewselector import IViewSelector
 from menhir.contenttype.folder import MCFMessageFactory as _
 
 
