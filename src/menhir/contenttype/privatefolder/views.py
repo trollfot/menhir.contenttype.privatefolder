@@ -39,30 +39,27 @@ class Apply(Action):
         if errors:
             return FAILURE
 
+        print data
         self.applyData(content, data)
-        form.status = _(u"Modification saved.")
+        form.redirect(form.url(form.context, name="controlbyrole"))
         return SUCCESS
 
 
 class PermissionsFields(object):
 
     def __set__(self, inst, value):
-        pass
+        raise NotImplementedError
 
     def __get__(self, inst, klass):
-        if inst is None:
-            return None
-
         value = inst.__dict__.get('_permissions', None)
         if value is None:
             value = inst.__dict__['_permissions'] = Fields()
             for name, permission in getUtilitiesFor(IRole):
-                value.append(ChoiceSchemaField(Choice(
-                    __name__=permission.id,
-                    title=permission.title,
-                    values=[Allow.getName(),
-                            Deny.getName(),
-                            Unset.getName()])))
+                value.append(ChoiceSchemaField(
+                    Choice(__name__=permission.id,
+                           title=permission.title,
+                           values=[Allow, Deny, Unset]),
+                    ))
         return value
 
 
@@ -72,23 +69,20 @@ class PermissionWrapper(object):
     def __init__(self, permission, manager):
         self.permission = permission
         self.manager = manager
-        self.title = permission.title
 
     def getContent(self):
         return self
 
     def get(self, name):
-        if hasattr(self, name):
-            return self.__getattribute__(name)
         return self.manager.getSetting(
-            self.permission.id, name, default=Unset).getName()
+            self.permission.id, name, default=Unset)
 
     def set(self, id, value):
-        if value is Unset.getName():
+        if value is Unset:
             self.manager.unsetPermissionFromRole(self.permission.id, id)
-        elif value is Deny.getName():
+        elif value is Deny:
             self.manager.denyPermissionToRole(self.permission.id, id)
-        elif value is Allow.getName():
+        elif value is Allow:
             self.manager.grantPermissionToRole(self.permission.id, id)
 
 
@@ -104,6 +98,7 @@ class ControlByRole(TableFormCanvas, Form):
 
     items = None
     ignoreContent = False
+    ignoreRequest = False
 
     def updateLines(self, mark_selected=False):
         self.lines = []
@@ -116,11 +111,17 @@ class ControlByRole(TableFormCanvas, Form):
                 self, content=PermissionWrapper(item, manager), prefix=prefix)
             form.selected = False
 
-            title = SchemaField(TextLine(
+            titleField = SchemaField(TextLine(
                 __name__="title",
-                title=u"title",
-                default=unicode(item.title)))
-            title.mode = DISPLAY
+                title=u"title",                
+                default=u""))
+    
+            titleField.mode = DISPLAY
+            titleField.ignoreRequest = True
+            titleField.ignoreContent = True
+            titleField.readonly = True
+            titleField.defaultValue = item.title
+            
             lineWidget = Widgets(form=form, request=self.request)
 
             # Checkbox to select the line
@@ -136,7 +137,7 @@ class ControlByRole(TableFormCanvas, Form):
                         form.selected = True
 
             lineWidget.extend(selectedField)
-            lineWidget.extend(title)
+            lineWidget.extend(titleField)
             self.lines.append(form)
             self.lineWidgets.append(lineWidget)
 
