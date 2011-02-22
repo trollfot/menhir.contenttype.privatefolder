@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import dolmen.content
+from zope.interface import implements
 from dolmen.app.content import icon
-from menhir.contenttype.folder import Folder, IFolder, MCFMessageFactory as _
+from menhir.contenttype.folder import Folder, MCFMessageFactory as _
 
 
 class IPrivateFolder(IFolder):
@@ -12,5 +13,5 @@ class IPrivateFolder(IFolder):
 
 class PrivateFolder(Folder):
     icon('folder.png')
-    dolmen.content.schema(IPrivateFolder)
+    implements(IPrivateFolder)
     dolmen.content.name(_(u"Private folder"))
