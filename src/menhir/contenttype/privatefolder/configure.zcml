@@ -6,6 +6,7 @@
   <include package="dolmen.app.layout" />
   <include package="dolmen.app.container" />
   <include package="dolmen.app.viewselector" />
+  <include package="zeam.form.table" />
 
   <include package="zope.i18n" file="meta.zcml" />
   <i18n:registerTranslations directory="locales" />

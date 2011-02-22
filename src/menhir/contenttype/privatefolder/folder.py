@@ -6,7 +6,7 @@ from dolmen.app.viewselector import IViewSelector
 from menhir.contenttype.folder import MCFMessageFactory as _
 
 
-class IPrivateFolder(IDescriptiveSchema, IViewSelector):
+class IPrivateFolder(IDescriptiveSchema):
     """Schema interface for private folders.
     """
 
@@ -14,5 +14,5 @@ class IPrivateFolder(IDescriptiveSchema, IViewSelector):
 class PrivateFolder(dolmen.content.OrderedContainer):
     icon('folder.png')
     dolmen.content.schema(IPrivateFolder)
-    dolmen.content.name(_(u"Folder"))
+    dolmen.content.name(_(u"Private folder"))
     selected_view = "folderlisting"

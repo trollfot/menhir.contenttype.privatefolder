@@ -1,0 +1,29 @@
+<form action="#" tal:attributes="action request.URL" method="post"
+      enctype="multipart/view-data"
+      i18n:domain="zeam.view.base">
+  <table tal:condition="view.lineWidgets" class="listing">
+    <thead>
+      <tr>
+	<th>&nbsp;</th>
+	<th>Permission</th>
+	<th tal:repeat="field view.tableFields"
+	  tal:content="field.title">
+          Title
+	</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr tal:repeat="line view.lineWidgets">
+	<td tal:repeat="widget line"
+	    tal:content="structure widget.render()">
+	</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="actions"
+       tal:condition="view.actionWidgets">
+    <div class="action" tal:repeat="widget view.actionWidgets">
+      <tal:widget tal:content="structure widget.render()" />
+    </div>
+  </div>
+</form>

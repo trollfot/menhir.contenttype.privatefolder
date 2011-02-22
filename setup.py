@@ -53,6 +53,7 @@ setup(name = name,
           'zope.component',
           'zope.i18n',
           'zope.i18nmessageid',
+          'zeam.form.table',
       ],
       classifiers = [
         'Environment :: Web Environment',
