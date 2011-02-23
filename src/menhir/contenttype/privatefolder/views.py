@@ -26,6 +26,27 @@ from zope.securitypolicy.interfaces import IRole, IRolePermissionManager
 from zope.securitypolicy.settings import Allow, Deny, Unset
 
 
+def permissions(self):
+    for name, permission in getUtilitiesFor(IPermission):
+        yield name, permission
+
+
+def roles(self):
+    for name, role in getUtilitiesFor(IRole):
+        yield name, role
+
+
+def filter_items(items, filters):
+    for name, value in items:
+        iterate = True
+        for filter in filters:
+            if not filter(permission):
+                iterate = False
+                break
+        if iterate is True:
+            yield name, value
+
+
 class Apply(Action):
     title = u"Apply"
 
@@ -50,11 +71,13 @@ class PermissionsFields(object):
     def __set__(self, inst, value):
         raise NotImplementedError
 
-    def __get__(self, inst, klass):
+    def __get__(self, inst, cls):
+        if inst is None:
+            return None
         value = inst.__dict__.get('_permissions', None)
         if value is None:
             value = inst.__dict__['_permissions'] = Fields()
-            for name, permission in getUtilitiesFor(IRole):
+            for name, permission in filter_items(roles(), self.role_filters):
                 value.append(ChoiceSchemaField(
                     Choice(__name__=permission.id,
                            title=permission.title,
@@ -84,6 +107,13 @@ class PermissionWrapper(object):
             self.manager.denyPermissionToRole(self.permission.id, id)
         elif value is Allow:
             self.manager.grantPermissionToRole(self.permission.id, id)
+        else:
+            raise ValueError(
+                'The given value is not a valid permission setting')
+
+
+def zopeRealm(item):
+    return not item.id.startswith('zope.')
 
 
 @menu.menuentry(ContextualMenu, order=50)
@@ -99,6 +129,9 @@ class ControlByRole(TableFormCanvas, Form):
     items = None
     ignoreContent = False
     ignoreRequest = False
+
+    role_filters = [zopeRealm]
+    permission_filters = [zopeRealm]
 
     def updateLines(self, mark_selected=False):
         self.lines = []
@@ -143,10 +176,8 @@ class ControlByRole(TableFormCanvas, Form):
 
     def getItems(self):
         if not self.items:
-            self.items = []
-            for name, permission in getUtilitiesFor(IPermission):
-                if not name.startswith('zope.'):
-                    self.items.append(permission)
+            self.items = list(
+                filter_items(permissions(), self.permission_filters))
         return self.items
 
 
