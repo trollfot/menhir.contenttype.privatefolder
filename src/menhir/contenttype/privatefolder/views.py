@@ -26,25 +26,29 @@ from zope.securitypolicy.interfaces import IRole, IRolePermissionManager
 from zope.securitypolicy.settings import Allow, Deny, Unset
 
 
-def permissions(self):
-    for name, permission in getUtilitiesFor(IPermission):
-        yield name, permission
-
-
-def roles(self):
-    for name, role in getUtilitiesFor(IRole):
-        yield name, role
-
-
 def filter_items(items, filters):
     for name, value in items:
         iterate = True
         for filter in filters:
-            if not filter(permission):
+            if not filter(value):
                 iterate = False
                 break
         if iterate is True:
             yield name, value
+
+
+def iter_permissions(*filters):
+    permissions = getUtilitiesFor(IPermission)
+    if not filters:
+        return permissions
+    return filter_items(permissions, filters)
+
+
+def iter_roles(*filters):
+    roles = getUtilitiesFor(IRole)
+    if not filters:
+        return roles
+    return filter_items(roles, filters)
 
 
 class Apply(Action):
@@ -68,6 +72,9 @@ class Apply(Action):
 
 class PermissionsFields(object):
 
+    def __init__(self, *filters):
+        self.filters = filters
+
     def __set__(self, inst, value):
         raise NotImplementedError
 
@@ -77,7 +84,7 @@ class PermissionsFields(object):
         value = inst.__dict__.get('_permissions', None)
         if value is None:
             value = inst.__dict__['_permissions'] = Fields()
-            for name, permission in filter_items(roles(), self.role_filters):
+            for name, permission in iter_roles(*self.filters):
                 value.append(ChoiceSchemaField(
                     Choice(__name__=permission.id,
                            title=permission.title,
@@ -116,6 +123,10 @@ def zopeRealm(item):
     return not item.id.startswith('zope.')
 
 
+def grokRealm(item):
+    return not item.id.startswith('grok.')
+
+
 @menu.menuentry(ContextualMenu, order=50)
 class ControlByRole(TableFormCanvas, Form):
     grok.context(IPrivateFolder)
@@ -123,15 +134,12 @@ class ControlByRole(TableFormCanvas, Form):
 
     actions = Actions()
     fields = Fields()
-    tableFields = PermissionsFields()
+    tableFields = PermissionsFields(zopeRealm)
     tableActions = TableActions(Apply())
 
     items = None
     ignoreContent = False
     ignoreRequest = False
-
-    role_filters = [zopeRealm]
-    permission_filters = [zopeRealm]
 
     def updateLines(self, mark_selected=False):
         self.lines = []
@@ -177,7 +185,8 @@ class ControlByRole(TableFormCanvas, Form):
     def getItems(self):
         if not self.items:
             self.items = list(
-                filter_items(permissions(), self.permission_filters))
+                (perm for name, perm in
+                 iter_permissions(zopeRealm, grokRealm)))
         return self.items
 
 
