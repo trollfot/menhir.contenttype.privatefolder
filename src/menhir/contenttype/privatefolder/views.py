@@ -26,6 +26,10 @@ from zope.securitypolicy.interfaces import IRole, IRolePermissionManager
 from zope.securitypolicy.settings import Allow, Deny, Unset
 
 
+def sort_items(itemA, itemB):
+    return cmp(itemA.id, itemB.id)
+
+
 def filter_items(items, filters):
     for name, value in items:
         iterate = True
@@ -127,10 +131,8 @@ def grokRealm(item):
     return not item.id.startswith('grok.')
 
 
-@menu.menuentry(ContextualMenu, order=50)
 class ControlByRole(TableFormCanvas, Form):
-    grok.context(IPrivateFolder)
-    grok.require('zope.ManageContent')
+    grok.baseclass()
 
     actions = Actions()
     fields = Fields()
@@ -187,6 +189,7 @@ class ControlByRole(TableFormCanvas, Form):
             self.items = list(
                 (perm for name, perm in
                  iter_permissions(zopeRealm, grokRealm)))
+            self.items.sort(sort_items)
         return self.items
 
 
